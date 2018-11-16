@@ -25,19 +25,19 @@ Install and compile *(tested with Jena/Fuseki 3.8.0)*
 - download and extract [Apache Jena libraries](https://jena.apache.org/download/#apache-jena) on directory `./jena`
 - ensure you have at least OpenJDK 8 correctly installed
 - run the following to compile `runSPARQL`: 
-
+```
     mkdir -p target/classes
     javac -classpath "fuseki/fuseki-server.jar:src/main/java/" -d "target/classes/"   src/main/java/org/webofcode/wfn/runSPARQL.java 
-
+```
 Then run:
-
+```
     cd fuseki
     java -Xmx120M -cp "fuseki-server.jar:../target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd --file ../dataset.rdf /ds
-    
+```    
 or alternatively, from the project root directory:
-
+```
     FUSEKI_HOME=fuseki FUSEKI_BASE=fuseki/run java -Xmx120M -cp "fuseki/fuseki-server.jar:target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd --file dataset.rdf /ds
- 
+``` 
 Usage
 -----
 
