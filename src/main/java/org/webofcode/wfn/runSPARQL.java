@@ -69,6 +69,9 @@ public class runSPARQL extends FunctionBase3 {
         
         List<RDFNode> solutions = resultSet2List(rs);
         
+        
+        qe.close();
+        
         System.out.println("runSPARQL: result size was" + solutions.size());
         if (solutions.size()>0) {
             RDFNode node = solutions.get(0); // only the first solution is used
