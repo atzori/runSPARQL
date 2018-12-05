@@ -21,6 +21,7 @@ import org.apache.jena.sparql.function.FunctionRegistry;
 
 import org.apache.jena.sparql.function.*;
 import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.engine.http.Service;
 
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
@@ -64,13 +65,19 @@ public class runSPARQL extends FunctionBase3 {
         //QueryExecution qe = QueryExecutionFactory.create(query); // local call not working without specifying a dataset
 
 	    String service = nvEndpoint.asUnquotedString();
-        QueryExecution qe = QueryExecutionFactory.sparqlService(service, query);
-        ResultSet rs = qe.execSelect();
+
+
         
-        List<RDFNode> solutions = resultSet2List(rs);
-        
-        
-        qe.close();
+        org.slf4j.Logger logger = ARQ.getInfoLogger();
+	    logger.info("runSPARL SLF4J LOGGER");
+	    //System.out.println("BASE: "+ Service.base );
+	    
+	    List<RDFNode> solutions = null;
+	    try (QueryExecution qe = 
+	            QueryExecutionFactory.sparqlService(service, query)) {
+            ResultSet rs = qe.execSelect();
+            solutions = resultSet2List(rs);
+        }
         
         System.out.println("runSPARQL: result size was" + solutions.size());
         if (solutions.size()>0) {
