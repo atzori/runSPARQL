@@ -26,11 +26,11 @@ Install and compile *(tested with Fuseki 3.8.0)*
 -------------------
 1. ensure you have at least OpenJDK 8 correctly installed
 2. download and extract [Apache Fuseki 2](https://jena.apache.org/download/#apache-jena-fuseki) on directory `./fuseki`
-    - to enable logging (optional but recommended): ensure that file `cp -i config/log4j.properties fuseki/run/`
-    - to register the function (optional but recommended): add `ja:loadClass  "org.webofcode.wfn.runSPARQL"; '` just before last period (`.`) in `fuseki/run/config.ttl` (alternatively: `cp -i config/config.ttl fuseki/run/`)
+    - enable logging (optional but recommended): `cp -i config/log4j.properties fuseki/run/`
+    - register the function (optional but recommended): add `ja:loadClass  "org.webofcode.wfn.runSPARQL"; ` just before last period (`.`) in `fuseki/run/config.ttl` (alternatively: `cp -i config/config.ttl fuseki/run/`)
     - create a service with example data: `cp -i config/service1.ttl fuseki/run/configuration/` 
-3. compile runSPARQL java code: `./compile`
-5. run fuseki: `./run-fuseki`
+3. compile runSPARQL Java code: `./compile`
+4. run fuseki: `./run-fuseki`
 
 
 Usage
