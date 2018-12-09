@@ -22,6 +22,8 @@ import org.apache.jena.sparql.function.FunctionRegistry;
 import org.apache.jena.sparql.function.*;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.engine.http.Service;
+import org.apache.jena.sparql.function.FunctionRegistry;
+
 
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
@@ -29,14 +31,24 @@ import org.apache.jena.sparql.expr.Expr;
 import java.util.*;
 
 public class runSPARQL extends FunctionBase3 {
+    static org.slf4j.Logger logger =  ARQ.getInfoLogger();
 
+
+   public static void init() {
+        // Register with the global registry.
+        System.out.println("init called!!!");
+        logger.info("init called");
+        FunctionRegistry.get().put("http://webofcode.org/wfn/", runSPARQL.class) ;
+        
+    }
 
     public runSPARQL() {
-        super(); 
+        logger.info("constructor called");
     }
 
 
     public NodeValue exec(NodeValue nvQuery, NodeValue nvEndpoint, NodeValue nvInputVar) {
+        logger.info("exec called");
         
 	    String template = 
           	"PREFIX wfn: <java:org.webofcode.wfn.>\n"+
@@ -59,18 +71,15 @@ public class runSPARQL extends FunctionBase3 {
 		    .replaceAll("%i0%",nvInputVar.toString())
 		    .replace("%queryexec%",nvQuery.toString().trim().replaceAll("^\\\"(.*)\\\"$","$1"));
 
-	    //System.out.println("\n====================\n"+query+"\n====================\n");
-	    //query = "select * from <Cagliari.rdf> where {?s ?result ?o } limit 1";
             
         //QueryExecution qe = QueryExecutionFactory.create(query); // local call not working without specifying a dataset
 
 	    String service = nvEndpoint.asUnquotedString();
-
-
         
-        org.slf4j.Logger logger = ARQ.getInfoLogger();
-	    logger.info("runSPARL SLF4J LOGGER");
-	    //System.out.println("BASE: "+ Service.base );
+        org.slf4j.Logger logger =  ARQ.getInfoLogger();
+	    logger.info("runSPARQL: i0 = " + nvInputVar.toString());
+
+	    //logger.info("BASE: "+ Service.base );
 	    
 	    List<RDFNode> solutions = null;
 	    try (QueryExecution qe = 
@@ -79,26 +88,27 @@ public class runSPARQL extends FunctionBase3 {
             solutions = resultSet2List(rs);
         }
         
-        System.out.println("runSPARQL: result size was" + solutions.size());
+        logger.info("runSPARQL: result size was " + solutions.size());
         if (solutions.size()>0) {
             RDFNode node = solutions.get(0); // only the first solution is used
 
-		    System.out.println("runSPARQL: result was " + node);
+		    logger.info("runSPARQL: result was " + node);
 		    if (node == null) 
 		        return nodeNone(); //nvNothing; //Expr.NONE; //throw new RuntimeException("runSPARQL: node null");
 	        return NodeValue.makeNode(node.asNode());
                     
         } else {
-	        System.out.println("runSPARQL: resultset was empty");
+	        logger.info("runSPARQL: resultset was empty");
 		    return nodeNone(); //nvNothing; // Expr.NONE; //NodeValue.makeString("no result!");        
         }
 
     }
     
-    @SuppressWarnings( "deprecation" )
+    // @SuppressWarnings( "deprecation" )
     private static NodeValue nodeNone() {
         //return (NodeValue) NodeValue.NONE;
-        return NodeValue.nvNothing;
+        //return NodeValue.nvNothing;
+        return NodeValue.NONE.eval(null,null);
     }
     
     /** convert a ResultSet with column "result" into a List of RDFNode */

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# NOTE: do not run this script from another directory
+# alternatively, go to the fuseki directory to run directly, e.g.:
+#
+# cd fuseki
+# java -Xmx120M -cp "fuseki-server.jar:../target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd --file ../dataset.rdf /ds
+
+
+# using default configuration in file "fuseki/run/config.ttl"
+FUSEKI_HOME=fuseki FUSEKI_BASE=fuseki/run  java -Xmx120M -cp "fuseki/fuseki-server.jar:target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd 
+
+
+
