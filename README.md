@@ -4,8 +4,9 @@ Computing Recursive SPARQL Queries
 Introducing Recursion in SPARQL
 -------------------------------
 
-We developed a SPARQL function called `wfn:runSPARQL` that takes as a parameter a string containing a SPARQL query and executes it.
-Such SPARQL query can refer to itself, thus enabling recursion and extending the range of computable functions within SPARQL.
+We developed a SPARQL function called `wfn:runSPARQL` that takes a string containing a SPARQL query as input and executes it.
+Such SPARQL query **can refer to itself**, thus enabling recursion and extending the range of computable functions within SPARQL.
+It allows simple recursive computations such as factorial or graph traversal algorithms to be easily implemented within SPARQL on [Fuseki](https://jena.apache.org/documentation/fuseki2/).
 
 Our work can be found in: 
 
@@ -87,7 +88,7 @@ SELECT ?result
 } 
 ```
 
-The call of `runSPARQL` will generate another SPARQL query, recursively calling `runSPARQL`:
+The call of `runSPARQL` will generate another SPARQL query, recursively calling `runSPARQL`, similar to the following one:
 ```
 PREFIX wfn: <java:org.webofcode.wfn.>
 PREFIX db: <http://dbpedia.org/>
