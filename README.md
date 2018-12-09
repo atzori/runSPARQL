@@ -45,7 +45,7 @@ Examples
 ### Computing the Factorial
 The following is an example of recursive SPARQL query that computes the factorial of 3: 
 ```
-PREFIX wfn: <org.webofcode.wfn.> 
+PREFIX wfn: <http://webofcode.org/wfn/>
 #alternatively use: PREFIX wfn: <java:org.webofcode.wfn.>
 
 SELECT ?result 
@@ -66,7 +66,7 @@ SELECT ?result
 An example of recursive SPARQL query that computes the distance between two nodes ([dbo:PopulatedPlace](http://dbpedia.org/ontology/PopulatedPlace) and [dbo:Village](http://dbpedia.org/ontology/Village)) in a hierarchy: 
 
 ```
-PREFIX wfn: <org.webofcode.wfn.>
+PREFIX wfn: <http://webofcode.org/wfn/>
 #alternatively use: PREFIX wfn: <java:org.webofcode.wfn.>
 PREFIX db: <http://dbpedia.org/>
 PREFIX dbo: <http://dbpedia.org/ontology/>

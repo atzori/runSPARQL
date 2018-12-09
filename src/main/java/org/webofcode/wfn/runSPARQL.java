@@ -38,7 +38,7 @@ public class runSPARQL extends FunctionBase3 {
         // Register with the global registry.
         System.out.println("init called!!!");
         logger.info("init called");
-        FunctionRegistry.get().put("http://webofcode.org/wfn/", runSPARQL.class) ;
+        FunctionRegistry.get().put("http://webofcode.org/wfn/runSPARQL", runSPARQL.class) ;
         
     }
 
