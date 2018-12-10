@@ -8,7 +8,8 @@
 
 
 # using default configuration in file "fuseki/run/config.ttl"
-FUSEKI_HOME=fuseki FUSEKI_BASE=fuseki/run  java -Xmx120M -cp "fuseki/fuseki-server.jar:target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd 
+FUSEKI_HOME=fuseki FUSEKI_BASE=fuseki/run  java -Xmx120M -cp "fuseki/fuseki-server.jar:target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd --jetty-config config/jetty.xml
+#--timeout=500,500
 
 
 

@@ -30,13 +30,16 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.expr.Expr;
 import java.util.*;
 
+import org.apache.jena.sparql.ARQConstants;
+import org.apache.jena.rdfconnection.*;
+
+
 public class runSPARQL extends FunctionBase3 {
     static org.slf4j.Logger logger =  ARQ.getInfoLogger();
 
 
    public static void init() {
         // Register with the global registry.
-        System.out.println("init called!!!");
         logger.info("init called");
         FunctionRegistry.get().put("http://webofcode.org/wfn/runSPARQL", runSPARQL.class) ;
         
@@ -63,7 +66,7 @@ public class runSPARQL extends FunctionBase3 {
 	    "    )} \n"+
 	    "    # the recursive query \n\n"+
 	    "    %queryexec% \n"+
-	    "} ORDER BY DESC(?result) \n"; // LIMIT 1 is done by List.get(0) 
+	    "} ORDER BY ASC(?result) \n"; // LIMIT 1 is done by List.get(0) 
 
 	    String query = template
 		    .replaceAll("%query%",nvQuery.toString())
@@ -78,14 +81,34 @@ public class runSPARQL extends FunctionBase3 {
         
         org.slf4j.Logger logger =  ARQ.getInfoLogger();
 	    logger.info("runSPARQL: i0 = " + nvInputVar.toString());
+        logger.info("runSPARQL: service = " + service);
+        logger.info("runSPARQL: " + ARQConstants.sysCurrentDataset ); //symDatasetDefaultGraphs.toString()) ;
 
 	    //logger.info("BASE: "+ Service.base );
 	    
 	    List<RDFNode> solutions = null;
-	    try (QueryExecution qe = 
-	            QueryExecutionFactory.sparqlService(service, query)) {
-            ResultSet rs = qe.execSelect();
+       /* try ( RDFConnection conn = RDFConnectionFactory.connect("http://127.0.0.1:3030/ds") ) {
+
+            logger.info("runSPARQL: within try x1");
+
+            ResultSet rs = conn.query(query).execSelect() ;
+            logger.info("runSPARQL: within try x2");
             solutions = resultSet2List(rs);
+            //return ResultSetFactory.copyResults(rs) ;
+
+
+        }*/
+
+	    try (QueryExecution qe = 
+	            QueryExecutionFactory.sparqlService(service, query)
+	            //QueryExecutionFactory.create(query, Dataset.getDefaultModel()) 
+	      ) {
+            logger.info("runSPARQL: within try");
+            ResultSet rs = qe.execSelect();
+            //rs = ResultSetFactory.copyResults(rs) ;
+            logger.info("runSPARQL: within try2");
+            solutions = resultSet2List(rs);
+            logger.info("runSPARQL: within try3");
         }
         
         logger.info("runSPARQL: result size was " + solutions.size());
@@ -104,11 +127,11 @@ public class runSPARQL extends FunctionBase3 {
 
     }
     
-    // @SuppressWarnings( "deprecation" )
+    @SuppressWarnings( "deprecation" )
     private static NodeValue nodeNone() {
         //return (NodeValue) NodeValue.NONE;
-        //return NodeValue.nvNothing;
-        return NodeValue.NONE.eval(null,null);
+        return NodeValue.nvNothing;
+        //return NodeValue.NONE.eval(null,null);
     }
     
     /** convert a ResultSet with column "result" into a List of RDFNode */
