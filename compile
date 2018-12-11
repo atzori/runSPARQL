@@ -3,5 +3,5 @@
 # NOTE: do not run this script from another directory
 
 mkdir -p target/classes
-javac -classpath "fuseki/fuseki-server.jar:src/main/java/" -d "target/classes/"   src/main/java/org/webofcode/wfn/runSPARQL.java 
+javac -classpath "fuseki/fuseki-server.jar:src/main/java/" -d "target/classes/" src/main/java/org/webofcode/wfn/*.java 
 

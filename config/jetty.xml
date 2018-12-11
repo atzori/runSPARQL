@@ -2,11 +2,13 @@
 <!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_3.dtd">
 
 <!--
+    NOTE: this file is originally from: https://github.com/apache/jena/blob/master/jena-fuseki2/examples/fuseki-jetty-https.xml
+    CHANGES:
+     - The SSL certificate part has been commented to avoid certificate configuration
+     - The port has been set to 3030 (originally 8082)
 
-see: https://github.com/NatLibFi/Skosmos/wiki/FusekiTuning
-AND see: https://github.com/apache/jena/blob/master/jena-fuseki2/examples/fuseki-jetty-https.xml
+    for tuning refer to: https://github.com/NatLibFi/Skosmos/wiki/FusekiTuning
 -->
-
 
 
 <!--
@@ -16,7 +18,9 @@ AND see: https://github.com/apache/jena/blob/master/jena-fuseki2/examples/fuseki
    The ASF licenses this file to You under the Apache License, Version 2.0
    (the "License"); you may not use this file except in compliance with
    the License.  You may obtain a copy of the License at
+
        http://www.apache.org/licenses/LICENSE-2.0
+
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,22 +30,30 @@ AND see: https://github.com/apache/jena/blob/master/jena-fuseki2/examples/fuseki
 
 <!--
 Example Jetty - you will need to configure a certificate.
+
 ** You will need to configure this example. **
+
 See "sslContextFactory" below.
+
 Contributed by: Jason Levitt
 http://mail-archives.apache.org/mod_mbox/jena-users/201509.mbox/%3C55EB4CA2.7040803@apache.org%3E
+
 Use:
    fuseki -jetty fuseki-jetty-https.xml ...
+
    
 External references:
+
 Jetty documentation on SSL:
    http://www.eclipse.org/jetty/documentation/current/configuring-ssl.html
+
 Oracle Java keytool
    http://docs.oracle.com/javase/8/docs/technotes/tools/windows/keytool.html
    
 Some more tools to help manage Java certificate store:
    https://bitbucket.org/rvesse/java-ssl-helper/overview
 (external project Rob Vesse and Paul Heinlein / License: CC-BY-NC-SA)
+
 -->
 
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
@@ -229,7 +241,7 @@ Some more tools to help manage Java certificate store:
 <!-- SSL ContextFactory configuration                              -->
 <!-- ============================================================= -->
 <!-- Configure id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory" -->
-
+<!-- THIS PART HAS BEEN COMMENTED TO AVOID SSL CONFIGURATION: YOU MUST UNCOMMENT AND CONFIGURE IT FOR PRODUCTION USE! -->
 <!--
 <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
   <Set name="KeyStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.keyStorePath" deprecated="jetty.keystore" default="etc/keystore"/></Set>
@@ -256,7 +268,8 @@ Some more tools to help manage Java certificate store:
    </Array>
   </Set>
   <Set name="useCipherSuitesOrder"><Property name="jetty.sslContext.useCipherSuitesOrder" default="true"/></Set>
-</New>-->
+</New>
+-->
 
 <!-- ============================================================= -->
 <!-- Configure a HTTPS connector.                                  -->

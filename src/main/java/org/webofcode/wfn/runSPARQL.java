@@ -21,17 +21,22 @@ import org.apache.jena.sparql.function.FunctionRegistry;
 
 import org.apache.jena.sparql.function.*;
 import org.apache.jena.sparql.expr.NodeValue;
-import org.apache.jena.sparql.engine.http.Service;
+//import org.apache.jena.sparql.engine.http.Service;
+//import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 import org.apache.jena.sparql.function.FunctionRegistry;
 
 
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.expr.Expr;
-import java.util.*;
 
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.rdfconnection.*;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.client.HttpClient;
+import org.apache.jena.graph.NodeFactory;
+
+import java.util.*;
 
 
 public class runSPARQL extends FunctionBase3 {
@@ -39,14 +44,12 @@ public class runSPARQL extends FunctionBase3 {
 
 
    public static void init() {
-        // Register with the global registry.
-        logger.info("init called");
-        FunctionRegistry.get().put("http://webofcode.org/wfn/runSPARQL", runSPARQL.class) ;
-        
+        // Register with the global function registry
+        logger.info("runSPARQL: init called");
+        FunctionRegistry.get().put("http://webofcode.org/wfn/runSPARQL", runSPARQL.class) ;        
     }
 
     public runSPARQL() {
-        logger.info("constructor called");
     }
 
 
@@ -54,38 +57,36 @@ public class runSPARQL extends FunctionBase3 {
         logger.info("exec called");
         
 	    String template = 
-          	"PREFIX wfn: <java:org.webofcode.wfn.>\n"+
-	    "SELECT ?result \n"+ 
-	    //"FROM <dataset.rdf>\n"+
-	    "{ \n"+
-	    "    # bind variables to parameter values\n"+ 
-	    "    VALUES (?query ?endpoint ?i0) { ( \n"+
-	    "        %query% \n"+
-	    "        %endpoint% \n"+
-	    "        %i0% \n"+
-	    "    )} \n"+
-	    "    # the recursive query \n\n"+
-	    "    %queryexec% \n"+
-	    "} ORDER BY ASC(?result) \n"; // LIMIT 1 is done by List.get(0) 
+              	"PREFIX wfn: <java:org.webofcode.wfn.>\n"+
+	            "SELECT ?result \n"+ 
+	            //"FROM <dataset.rdf>\n"+
+	            "{ \n"+
+	            "    # bind variables to parameter values\n"+ 
+	            "    VALUES (?query ?endpoint ?i0) { ( \n"+
+	            "        %query% \n"+
+	            "        %endpoint% \n"+
+	            "        %i0% \n"+
+	            "    )} \n"+
+	            "    # the recursive query \n\n"+
+	            "    %queryexec% \n"+
+	            "} ORDER BY ASC(?result) \n"; // LIMIT 1 is done by List.get(0) 
 
 	    String query = template
 		    .replaceAll("%query%",nvQuery.toString())
 		    .replaceAll("%endpoint%",nvEndpoint.toString())
 		    .replaceAll("%i0%",nvInputVar.toString())
 		    .replace("%queryexec%",nvQuery.toString().trim().replaceAll("^\\\"(.*)\\\"$","$1"));
+	    String service = nvEndpoint.asUnquotedString();
 
             
         //QueryExecution qe = QueryExecutionFactory.create(query); // local call not working without specifying a dataset
 
-	    String service = nvEndpoint.asUnquotedString();
         
-        org.slf4j.Logger logger =  ARQ.getInfoLogger();
-	    logger.info("runSPARQL: i0 = " + nvInputVar.toString());
+        logger.info("runSPARQL: i0 = " + nvInputVar.toString());
         logger.info("runSPARQL: service = " + service);
         logger.info("runSPARQL: " + ARQConstants.sysCurrentDataset ); //symDatasetDefaultGraphs.toString()) ;
 
-	    //logger.info("BASE: "+ Service.base );
-	    
+
 	    List<RDFNode> solutions = null;
        /* try ( RDFConnection conn = RDFConnectionFactory.connect("http://127.0.0.1:3030/ds") ) {
 
@@ -99,16 +100,21 @@ public class runSPARQL extends FunctionBase3 {
 
         }*/
 
+        /*
+            An HttpClient is necessary since default accept only a limited number of connections (no more than 5)
+            https://stackoverflow.com/questions/49661698/how-can-i-change-the-number-of-connections-par-route-in-jena-more-than-5
+        */
+
+        HttpClient client = HttpClientBuilder.create().build();
+	    
 	    try (QueryExecution qe = 
-	            QueryExecutionFactory.sparqlService(service, query)
+	            QueryExecutionFactory.sparqlService(service, query, client)
 	            //QueryExecutionFactory.create(query, Dataset.getDefaultModel()) 
 	      ) {
-            logger.info("runSPARQL: within try");
-            ResultSet rs = qe.execSelect();
+	      
+            ResultSet rs = qe.execSelect(); // sparql query is actually executed remotely on the endpoint
             //rs = ResultSetFactory.copyResults(rs) ;
-            logger.info("runSPARQL: within try2");
-            solutions = resultSet2List(rs);
-            logger.info("runSPARQL: within try3");
+            solutions = resultSet2List(rs);            
         }
         
         logger.info("runSPARQL: result size was " + solutions.size());
@@ -130,7 +136,8 @@ public class runSPARQL extends FunctionBase3 {
     @SuppressWarnings( "deprecation" )
     private static NodeValue nodeNone() {
         //return (NodeValue) NodeValue.NONE;
-        return NodeValue.nvNothing;
+        //return NodeValue.nvNothing; // equivalent to: NodeValue.makeNode(NodeFactory.createBlankNode(strForUnNode)) 
+        return NodeValue.makeNode(NodeFactory.createBlankNode("noResult"));
         //return NodeValue.NONE.eval(null,null);
     }
     

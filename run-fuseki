@@ -7,9 +7,9 @@
 # java -Xmx120M -cp "fuseki-server.jar:../target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd --file ../dataset.rdf /ds
 
 
-# using default configuration in file "fuseki/run/config.ttl"
-FUSEKI_HOME=fuseki FUSEKI_BASE=fuseki/run  java -Xmx120M -cp "fuseki/fuseki-server.jar:target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd --jetty-config config/jetty.xml
-#--timeout=500,500
+# config.ttl can be copied to "fuseki/run/"
+FUSEKI_HOME=fuseki FUSEKI_BASE=fuseki/run  java -Xmx1200M -cp "target/classes/:fuseki/fuseki-server.jar" org.apache.jena.fuseki.cmd.FusekiCmd --config config/config.ttl 
+#--jetty-config config/jetty.xml --timeout=500,500
 
 
 

@@ -19,18 +19,16 @@ Officially, we suggest the use of the following namespace:
 
     wfn: <http://webofcode.org/wfn/>
 
-Function will be called with `wfn:runSPARQL`. Please note that if function is not registered properly (see below for the installation instructions), you must use `PREFIX wfn: <java:org.webofcode.wfn.>` as in the examples section.
+Function will be called with `wfn:runSPARQL`. Please note that if function is not registered, you must use `PREFIX wfn: <java:org.webofcode.wfn.>` as in the examples section.
 
 
 Install and compile *(tested with Fuseki 3.8.0)*
 -------------------
-1. ensure you have at least OpenJDK 8 correctly installed
+1. ensure you have OpenJDK 8 or later correctly installed
 2. download and extract [Apache Fuseki 2](https://jena.apache.org/download/#apache-jena-fuseki) on directory `./fuseki`
-    - enable logging (optional but recommended): `cp -i config/log4j.properties fuseki/run/`
-    - register the function (optional but recommended): add `ja:loadClass  "org.webofcode.wfn.runSPARQL"; ` just before last period (`.`) in `fuseki/run/config.ttl` (alternatively: `cp -i config/config.ttl fuseki/run/`)
-    - create a service with example data: `cp -i config/service1.ttl fuseki/run/configuration/` 
-3. compile runSPARQL Java code: `./compile`
-4. run fuseki: `./run-fuseki`
+   - enable runSPARQL logging (optional but recommended for debugging): `cp -i config/log4j.properties fuseki/run/`
+3. compile runSPARQL Java source code: `./compile`
+4. run fuseki: `./run-fuseki` *(this will use settings in `./config/config.ttl`)*
 
 
 Usage
@@ -45,8 +43,7 @@ Examples
 ### Computing the Factorial
 The following is an example of recursive SPARQL query that computes the factorial of 3: 
 ```
-PREFIX wfn: <http://webofcode.org/wfn/>
-#alternatively use: PREFIX wfn: <java:org.webofcode.wfn.>
+PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.webofcode.wfn.>
 
 SELECT ?result 
 { 
@@ -66,8 +63,7 @@ SELECT ?result
 An example of recursive SPARQL query that computes the distance between two nodes ([dbo:PopulatedPlace](http://dbpedia.org/ontology/PopulatedPlace) and [dbo:Village](http://dbpedia.org/ontology/Village)) in a hierarchy: 
 
 ```
-PREFIX wfn: <http://webofcode.org/wfn/>
-#alternatively use: PREFIX wfn: <java:org.webofcode.wfn.>
+PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.webofcode.wfn.>
 PREFIX db: <http://dbpedia.org/>
 PREFIX dbo: <http://dbpedia.org/ontology/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
