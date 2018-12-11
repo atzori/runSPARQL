@@ -36,16 +36,21 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.client.HttpClient;
 import org.apache.jena.graph.NodeFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+
 import java.util.*;
 
 
 public class runSPARQL extends FunctionBase3 {
-    static org.slf4j.Logger logger =  ARQ.getInfoLogger();
+   private static Logger log = LoggerFactory.getLogger(runSPARQL.class);
 
 
    public static void init() {
         // Register with the global function registry
-        logger.info("runSPARQL: init called");
+        log.info("init called");
         FunctionRegistry.get().put("http://webofcode.org/wfn/runSPARQL", runSPARQL.class) ;        
     }
 
@@ -54,7 +59,7 @@ public class runSPARQL extends FunctionBase3 {
 
 
     public NodeValue exec(NodeValue nvQuery, NodeValue nvEndpoint, NodeValue nvInputVar) {
-        logger.info("exec called");
+        log.info("exec called");
         
 	    String template = 
               	"PREFIX wfn: <java:org.webofcode.wfn.>\n"+
@@ -69,7 +74,7 @@ public class runSPARQL extends FunctionBase3 {
 	            "    )} \n"+
 	            "    # the recursive query \n\n"+
 	            "    %queryexec% \n"+
-	            "} ORDER BY ASC(?result) \n"; // LIMIT 1 is done by List.get(0) 
+	            "} ORDER BY DESC(?result) \n"; // LIMIT 1 is done by List.get(0) -- in combination with DESC means max
 
 	    String query = template
 		    .replaceAll("%query%",nvQuery.toString())
@@ -82,18 +87,18 @@ public class runSPARQL extends FunctionBase3 {
         //QueryExecution qe = QueryExecutionFactory.create(query); // local call not working without specifying a dataset
 
         
-        logger.info("runSPARQL: i0 = " + nvInputVar.toString());
-        logger.info("runSPARQL: service = " + service);
-        logger.info("runSPARQL: " + ARQConstants.sysCurrentDataset ); //symDatasetDefaultGraphs.toString()) ;
+        log.info("i0 = " + nvInputVar.toString());
+        log.info("service = " + service);
+        //log.info(""+ARQConstants.sysCurrentDataset ); //symDatasetDefaultGraphs.toString()) ;
 
 
 	    List<RDFNode> solutions = null;
        /* try ( RDFConnection conn = RDFConnectionFactory.connect("http://127.0.0.1:3030/ds") ) {
 
-            logger.info("runSPARQL: within try x1");
+            log.info("within try x1");
 
             ResultSet rs = conn.query(query).execSelect() ;
-            logger.info("runSPARQL: within try x2");
+            log.info("within try x2");
             solutions = resultSet2List(rs);
             //return ResultSetFactory.copyResults(rs) ;
 
@@ -117,17 +122,17 @@ public class runSPARQL extends FunctionBase3 {
             solutions = resultSet2List(rs);            
         }
         
-        logger.info("runSPARQL: result size was " + solutions.size());
+        log.info("result size was " + solutions.size());
         if (solutions.size()>0) {
             RDFNode node = solutions.get(0); // only the first solution is used
 
-		    logger.info("runSPARQL: result was " + node);
+		    log.info("result was " + node);
 		    if (node == null) 
 		        return nodeNone(); //nvNothing; //Expr.NONE; //throw new RuntimeException("runSPARQL: node null");
 	        return NodeValue.makeNode(node.asNode());
                     
         } else {
-	        logger.info("runSPARQL: resultset was empty");
+	        log.info("resultset was empty");
 		    return nodeNone(); //nvNothing; // Expr.NONE; //NodeValue.makeString("no result!");        
         }
 
@@ -143,13 +148,13 @@ public class runSPARQL extends FunctionBase3 {
     
     /** convert a ResultSet with column "result" into a List of RDFNode */
     private static List<RDFNode> resultSet2List(ResultSet rs) {
-        if (rs == null) throw new RuntimeException("runSPARQL: null as result");
+        if (rs == null) throw new RuntimeException("null as result");
         
         List<RDFNode> solutions = new ArrayList<>();	        
 	    	        
         while(rs.hasNext()) {
 	        QuerySolution res = rs.next();
-	        if(res == null) throw new RuntimeException("runSPARQL: querysolution was null");
+	        if(res == null) throw new RuntimeException("querysolution was null");
 	        RDFNode node = res.get("result");
 	        solutions.add(node);	        
         }
