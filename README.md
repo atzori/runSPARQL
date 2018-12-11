@@ -26,7 +26,6 @@ Install and compile *(tested with Fuseki 3.8.0)*
 -------------------
 1. ensure you have OpenJDK 8 or later correctly installed
 2. download and extract [Apache Fuseki 2](https://jena.apache.org/download/#apache-jena-fuseki) on directory `./fuseki`
-   - enable runSPARQL logging (optional but recommended for debugging): `cp -i config/log4j.properties fuseki/run/`
 3. compile runSPARQL Java source code: `./compile`
 4. run fuseki: `./run-fuseki` *(this will use settings in `./config/config.ttl`)*
 
