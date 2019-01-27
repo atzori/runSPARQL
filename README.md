@@ -1,6 +1,9 @@
 Computing Recursive SPARQL Queries
 ==================================
 
+**NOTE: THIS IS A DEVELOPMENT VERSION** devoted to the implementation of the loop-aggregate feature inspired by the work of Prof. Carlo Zaniolo on Datalog.
+
+
 Introducing Recursion in SPARQL
 -------------------------------
 
