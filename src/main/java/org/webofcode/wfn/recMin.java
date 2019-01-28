@@ -50,12 +50,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- * This class implements the runSPARQL function to be used within SPARQL queries in the Apache Fuseki 2 triplestore.
+ * This class implements the recMin function to be used within SPARQL queries in the Apache Fuseki 2 triplestore.
 */
-public class runSPARQL extends FunctionBase3 {
+public class recMin extends FunctionBase3 {
     private final static boolean CACHE_ENABLED = true;
 
-    static Logger log = LoggerFactory.getLogger(runSPARQL.class);
+    static Logger log = LoggerFactory.getLogger(recMin.class);
     static int nInstances = 0;
     
     static Map<String,NodeValue> cache = new ConcurrentHashMap<>();
@@ -72,14 +72,15 @@ public class runSPARQL extends FunctionBase3 {
             "    )} \n"+
             "    # the recursive query \n\n"+
             "    %queryexec% \n"+
+            "    FILTER (!isBlank(?result))\n"+
             "} ORDER BY (?result) \n"; // LIMIT 1 is done by List.get(0) -- in combination with DESC means max
 
 
     public static void init() {
         log.info("Registering function");
-        FunctionRegistry.get().put("http://webofcode.org/wfn/runSPARQL", runSPARQL.class);
+        FunctionRegistry.get().put("http://webofcode.org/wfn/recMin", recMin.class);
     }
-    public runSPARQL() {
+    public recMin() {
         nInstances += 1;
         log.info("Creating instance #{}", nInstances);
     }

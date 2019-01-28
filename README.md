@@ -3,11 +3,13 @@ Computing Recursive SPARQL Queries
 
 **NOTE: THIS IS A DEVELOPMENT VERSION** devoted to the implementation of the loop-aggregate feature inspired by the work of Prof. Carlo Zaniolo on Datalog.
 
+Function is being refactored heavily and renamed `wfn:recMin`
+
 
 Introducing Recursion in SPARQL
 -------------------------------
 
-We developed a SPARQL function called `wfn:runSPARQL` that takes a string containing a SPARQL query as input and executes it.
+We developed a SPARQL function called `wfn:recMin` that takes a string containing a SPARQL query as input and executes it.
 Such SPARQL query **can refer to itself**, thus enabling recursion and extending the range of computable functions within SPARQL.
 It allows simple recursive computations such as factorial or graph traversal algorithms to be easily implemented within SPARQL on [Fuseki](https://jena.apache.org/documentation/fuseki2/).
 
@@ -22,21 +24,21 @@ Officially, we suggest the use of the following namespace:
 
     wfn: <http://webofcode.org/wfn/>
 
-Function will be called with `wfn:runSPARQL`. Please note that if function is not registered, you must use `PREFIX wfn: <java:org.webofcode.wfn.>` as in the examples section.
+Function will be called with `wfn:recMin`. Please note that if function is not registered, you must use `PREFIX wfn: <java:org.webofcode.wfn.>` as in the examples section.
 
 
 Install and compile *(tested with Fuseki 3.8.0)*
 -------------------
 1. ensure you have OpenJDK 8 or later correctly installed
 2. download and extract [Apache Fuseki 2](https://jena.apache.org/download/#apache-jena-fuseki) on directory `./fuseki`
-3. compile runSPARQL Java source code: `./compile`
+3. compile recMin Java source code: `./compile`
 4. run fuseki: `./run-fuseki` *(this will use settings in `./config/config.ttl`)*
 
 
 Usage
 -----
 
-`runSPARQL(query, endpoint, initValue)`
+`recMin(query, endpoint, initValue)`
 
 
 Examples
@@ -51,13 +53,13 @@ SELECT ?result
 { 
         # bind variables to parameter values 
         VALUES (?query ?endpoint) { ( 
-                "BIND ( IF(?i0 <= 0, 1, ?i0 * wfn:runSPARQL(?query,?endpoint, ?i0 -1)) AS ?result)" 
+                "BIND ( IF(?i0 <= 0, 1, ?i0 * wfn:recMin(?query,?endpoint, ?i0 -1)) AS ?result)" 
                 "http://127.0.0.1:3030/ds/sparql"
         )}
   
    
         # actual call of the recursive query 
-        BIND( wfn:runSPARQL(?query,?endpoint,3) AS ?result)
+        BIND( wfn:recMin(?query,?endpoint,3) AS ?result)
 }
 ```
 
@@ -74,16 +76,16 @@ SELECT ?result
 { 
         # bind variables to parameter values 
         VALUES (?query ?endpoint) { ( 
-                "?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next. BIND( IF(?next = <http://dbpedia.org/ontology/PopulatedPlace>, 1 , 1 + wfn:runSPARQL(?query, ?endpoint, ?next)) AS ?result)" 
+                "?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next. BIND( IF(?next = <http://dbpedia.org/ontology/PopulatedPlace>, 1 , 1 + wfn:recMin(?query, ?endpoint, ?next)) AS ?result)" 
                 "http://127.0.0.1:3030/ds/sparql"
         )}
    
         # actual call of the recursive query 
-        BIND( wfn:runSPARQL(?query,?endpoint, <http://dbpedia.org/ontology/Village>) AS ?result)
+        BIND( wfn:recMin(?query,?endpoint, <http://dbpedia.org/ontology/Village>) AS ?result)
 } 
 ```
 
-The call of `runSPARQL` will generate another SPARQL query, recursively calling `runSPARQL`, similar to the following one:
+The call of `recMin` will generate another SPARQL query, recursively calling `recMin`, similar to the following one:
 ```
 PREFIX wfn: <java:org.webofcode.wfn.>
 PREFIX db: <http://dbpedia.org/>

@@ -28,7 +28,7 @@
    # Must have a "public static void init()" method.
    # ja:loadClass "your.code.Class" ;   
 
-   ja:loadClass  "org.webofcode.wfn.runSPARQL";   
+   ja:loadClass  "org.webofcode.wfn.recMin";   
 
 
    # End triples.
