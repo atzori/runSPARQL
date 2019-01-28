@@ -99,3 +99,25 @@ SELECT ?result
 } LIMIT 1
 ```
 
+
+#### Node Distance with a different base case
+This is better for testing:
+
+```
+PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.webofcode.wfn.>
+PREFIX db: <http://dbpedia.org/>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?result 
+{ 
+        # bind variables to parameter values 
+        VALUES (?query ?endpoint) { ( 
+                "{?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next.} UNION { BIND(<fake> AS ?next)  } BIND( IF(?i0 = <http://dbpedia.org/ontology/Place>, 0 , 1 + wfn:recMin(?query, ?endpoint, ?next)) AS ?result)" 
+                "http://127.0.0.1:3030/ds/sparql"
+        )}
+   
+        # actual call of the recursive query 
+        BIND( wfn:recMin(?query,?endpoint, <http://dbpedia.org/ontology/Village>) AS ?result)
+} 
+```

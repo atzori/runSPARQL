@@ -82,7 +82,7 @@ public class recMin extends FunctionBase3 {
     }
     public recMin() {
         nInstances += 1;
-        log.info("Creating instance #{}", nInstances);
+        //log.debug("Creating instance #{}", nInstances);
     }
 
     public NodeValue exec(NodeValue nvQuery, NodeValue nvEndpoint, NodeValue nvInputVar) {
@@ -91,7 +91,7 @@ public class recMin extends FunctionBase3 {
         String service = nvEndpoint.asUnquotedString();
         String endpoint = nvEndpoint.toString();
         
-        log.info("Calling function with i0= {}, service={}", i0, service);
+        log.info("Calling with {}", i0);
 
         String query = TEMPLATE
             .replaceAll("%querySnippet%", querySnippet)
@@ -113,7 +113,7 @@ public class recMin extends FunctionBase3 {
         }
         
         List<RDFNode> solutions = executeQuery(query, service);
-        log.info("Result size for i0={} was {}, solutions= {}", i0, solutions.size(), solutions);
+        //log.info("Result size for i0={} was {}, solutions= {}", i0, solutions.size(), solutions);
         
         if (solutions.size()>0) {
             RDFNode node = solutions.get(0); // only the first solution is used
@@ -123,8 +123,9 @@ public class recMin extends FunctionBase3 {
 		    result = nodeNone(); //nvNothing; // Expr.NONE; //NodeValue.makeString("no result!");
         }
 
-	    log.info("Result was {}", result);
-	    if(CACHE_ENABLED) cache.put(key, result);
+	    //log.info("Result was {}", result);
+	    log.info("Result for {} was {}, solutions={}", i0, result, solutions);
+        if(CACHE_ENABLED) cache.put(key, result);
         return result;        
 
     }
