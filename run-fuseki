@@ -10,6 +10,6 @@
 # config.ttl can be copied to "fuseki/run/"
 FUSEKI_HOME=fuseki FUSEKI_BASE=fuseki/run  java -Xmx1200M -cp "target/classes/:fuseki/fuseki-server.jar" org.apache.jena.fuseki.cmd.FusekiCmd --config config/config.ttl 
 #--jetty-config config/jetty.xml --timeout=500,500
-
+#  -Dlog4j.configuration='./config/log4j.properties' not working properly
 
 

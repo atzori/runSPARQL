@@ -9,4 +9,5 @@ dbo:Settlement rdfs:subClassOf dbo:PopulatedPlace.
 dbo:Village rdfs:subClassOf dbo:Settlement ,
                             dbo:Place.
 
+dbo:Settlement rdfs:subClassOf dbo:Settlement.
 
