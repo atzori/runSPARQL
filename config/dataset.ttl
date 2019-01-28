@@ -5,8 +5,8 @@
 
 dbo:PopulatedPlace rdfs:subClassOf dbo:Place.
 dbo:Settlement rdfs:subClassOf dbo:PopulatedPlace.
-dbo:Village rdfs:subClassOf dbo:Settlement ,
-                            dbo:Place.
+dbo:Village rdfs:subClassOf dbo:Place, dbo:Settlement.
+
 dbo:Place rdfs:subClassOf dbo:Location.
 dbo:Location rdfs:subClassOf owl:Thing.
 

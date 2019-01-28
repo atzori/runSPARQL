@@ -31,8 +31,12 @@ Install and compile *(tested with Fuseki 3.8.0)*
 -------------------
 1. ensure you have OpenJDK 8 or later correctly installed
 2. download and extract [Apache Fuseki 2](https://jena.apache.org/download/#apache-jena-fuseki) on directory `./fuseki`
-3. compile recMin Java source code: `./compile`
-4. run fuseki: `./run-fuseki` *(this will use settings in `./config/config.ttl`)*
+3. compile *recMin* Java source code: `./compile`
+4. run fuseki using testing settings: `./run-fuseki`
+    - fuseki server settings in `config/config.ttl` 
+    - initial data in `config/dataset.ttl` 
+    - log4j settings in `config/log4j.properties`
+5. go to: [http://127.0.0.1:3030](http://127.0.0.1:3030)
 
 
 Usage
@@ -63,7 +67,8 @@ SELECT ?result
 }
 ```
 
-### Graph search: node distance
+### Graph search
+#### Node distance (base case 1), efficient
 An example of recursive SPARQL query that computes the distance between two nodes ([dbo:PopulatedPlace](http://dbpedia.org/ontology/PopulatedPlace) and [dbo:Village](http://dbpedia.org/ontology/Village)) in a hierarchy: 
 
 ```
@@ -100,7 +105,7 @@ SELECT ?result
 ```
 
 
-#### Node Distance with a different base case
+#### Node distance (base case 0), ugly solution with fake node
 This is better for testing:
 
 ```
@@ -119,5 +124,28 @@ SELECT ?result
    
         # actual call of the recursive query 
         BIND( wfn:recMin(?query,?endpoint, <http://dbpedia.org/ontology/Village>) AS ?result)
+} 
+```
+
+
+#### Node distance (base case 0), clean solution
+This is probably the most elegant solution, based on `OPTIONAL`:
+
+```
+PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.webofcode.wfn.>
+PREFIX db: <http://dbpedia.org/>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?result 
+{ 
+    # bind variables to parameter values 
+    VALUES (?query ?endpoint) { ( 
+        "OPTIONAL { ?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next} BIND( IF(?i0 = <http://dbpedia.org/ontology/PopulatedPlace>, 0 , 1 + wfn:recMin(?query, ?endpoint, ?next)) AS ?result)" 
+        "http://127.0.0.1:3030/ds/sparql"
+    )}
+
+    # actual call of the recursive query 
+    BIND( wfn:recMin(?query,?endpoint, <http://dbpedia.org/ontology/Village>) AS ?result)
 } 
 ```
