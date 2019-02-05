@@ -2,29 +2,8 @@
  *  Copyright 2014-2019. Maurizio Atzori <atzori@unica.it>
  *
  */
-
+ 
 package org.webofcode.wfn;
-
-/*
-import org.apache.jena.atlas.lib.StrUtils;
-import org.apache.jena.atlas.logging.LogCtl;
-import org.apache.jena.fuseki.FusekiLib;
-import org.apache.jena.fuseki.embedded.FusekiServer;
-import org.apache.jena.fuseki.system.FusekiLogging;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.query.ResultSetFormatter;
-import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
-import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.sparql.expr.NodeValue;
-import org.apache.jena.sparql.function.FunctionBase1;
-import org.apache.jena.sparql.function.FunctionRegistry;
-
-import org.apache.jena.sparql.engine.http.Service;
-import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
-*/
 
 import org.apache.jena.sparql.function.*;
 import org.apache.jena.sparql.expr.NodeValue;
@@ -47,72 +26,99 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.*;
+import static java.util.stream.Collectors.*;
 
+import org.apache.jena.atlas.lib.Lib;
+import org.apache.jena.query.QueryBuildException;
+import org.apache.jena.sparql.ARQInternalErrorException;
+import org.apache.jena.sparql.expr.ExprEvalException;
+import org.apache.jena.sparql.expr.ExprList;
 
 /**
  * This class implements the recMin function to be used within SPARQL queries in the Apache Fuseki 2 triplestore.
 */
-public class recMin extends FunctionBase3 {
-    private final static boolean CACHE_ENABLED = true;
-
+public class recMin extends FunctionBase {
     static Logger log = LoggerFactory.getLogger(recMin.class);
-    static int nInstances = 0;
     
+    private final static boolean CACHE_ENABLED = true;
+    static final String ENDPOINT = System.getProperty("endpoint");
+    static final String FN_NAME = "http://webofcode.org/wfn/recMin";
+    static int nInstances = 0;
     static Map<String,NodeValue> cache = new ConcurrentHashMap<>();
-
     static final NodeValue VISITED = NodeValue.makeNode(NodeFactory.createBlankNode("VISITED"));
-    final String TEMPLATE =
-          	"PREFIX wfn: <java:org.webofcode.wfn.>\n"+
-            "SELECT ?result { \n"+
-            "    # bind variables to parameter values\n"+ 
-            "    VALUES (?query ?endpoint ?i0) { ( \n"+
-            "        %querySnippet% \n"+
-            "        %endpoint% \n"+
-            "        %i0% \n"+
-            "    )} \n"+
-            "    # the recursive query \n\n"+
-            "    %queryexec% \n"+
-            "    FILTER (!isBlank(?result))\n"+
-            "} ORDER BY (?result) \n"; // LIMIT 1 is done by List.get(0) -- in combination with DESC means max
+    static  String TEMPLATE;
 
 
     public static void init() {
-        log.info("Registering function");
-        FunctionRegistry.get().put("http://webofcode.org/wfn/recMin", recMin.class);
+        log.info("Registering function {}", FN_NAME);
+        FunctionRegistry.get().put(FN_NAME, recMin.class);
+        //log.debug(System.getProperties().toString());
+        log.info("Endpoint set to {}", ENDPOINT);   
+        
+        // load sparql template file     
+        try {
+            TEMPLATE = String.join("\n", Files.readAllLines(Paths.get(System.getProperty("sparql_template"))));
+        } catch(Exception e) {
+            log.error("Error while reading sparql template");
+        }
+        //log.debug("Template set to {}", TEMPLATE);
+        
     }
     public recMin() {
         nInstances += 1;
         //log.debug("Creating instance #{}", nInstances);
     }
 
-    public NodeValue exec(NodeValue nvQuery, NodeValue nvEndpoint, NodeValue nvInputVar) {
-        String querySnippet = nvQuery.toString();
-        String i0 = nvInputVar.toString();
-        String service = nvEndpoint.asUnquotedString();
-        String endpoint = nvEndpoint.toString();
-        
-        log.info("Calling with {}", i0);
 
-        String query = TEMPLATE
-            .replaceAll("%querySnippet%", querySnippet)
-            .replaceAll("%endpoint%", endpoint)
-            .replaceAll("%i0%", i0)
-            .replace("%queryexec%", querySnippet.trim().replaceAll("^\\\"(.*)\\\"$","$1"));
+    @Override
+    public void checkBuild(String uri, ExprList args) { 
+        if ( args.size() < 1 )
+            throw new QueryBuildException("Function '"+Lib.className(this)+"' takes at least one argument (a query snippet)") ;
+    }
+
+    public NodeValue exec(List<NodeValue> args) { 
+    
+        if ( args == null )
+            // The contract on the function interface is that this should not happen.
+            throw new ARQInternalErrorException(Lib.className(this)+": Null args list") ;
         
+        if ( args.size() < 1 )
+            throw new ExprEvalException(Lib.className(this)+": Wrong number of arguments: Wanted 1+, got "+args.size()) ;
+        
+
+        String querySnippet = args.get(0).toString();
+        List<NodeValue> fnArgs = new ArrayList<>(args);
+        fnArgs.remove(0);
+        log.info("Calling with {}", fnArgs);
+            
+
+        String varNames = IntStream.range(0,fnArgs.size()).mapToObj(i -> "?i"+i).collect(Collectors.joining(" "));
+        String varValues = args.stream().map(e -> e.toString()).collect(Collectors.joining("\n"));
+
+        String bindings = String.format("VALUES (?query %s) { (\n%s\n)}", varNames, varValues);
+        
+        String query = TEMPLATE
+            .replace("%query_snippet%", querySnippet.trim().replaceAll("^\\\"(.*)\\\"$","$1"))
+            .replace("%bindings%", bindings);
+                    
+                
         NodeValue result = null;  
 
         // try to avoid loops    
-        String key = String.format("%s|%s", i0, query); // endpoint
+        String key = String.join("|",args.stream().map(e->e.toString()).collect(toList())); //String.format("%s|%s", i0, query); // endpoint
         if (CACHE_ENABLED) {
             if(cache.containsKey(key)) {
                 result = cache.get(key); 
-                log.info("Loop found for i0={}, result={}", i0, result);
+                log.info("Loop found for i0={}, result={}", fnArgs, result);
                 return result==VISITED? nodeNone(): result; 
             } else 
                 cache.put(key, VISITED); // mark as "visited (but not resolved yet)" 
         }
         
-        List<RDFNode> solutions = executeQuery(query, service);
+        List<RDFNode> solutions = executeQuery(query, ENDPOINT); //service); 
         //log.info("Result size for i0={} was {}, solutions= {}", i0, solutions.size(), solutions);
         
         if (solutions.size()>0) {
@@ -124,7 +130,7 @@ public class recMin extends FunctionBase3 {
         }
 
 	    //log.info("Result was {}", result);
-	    log.info("Result for {} was {}, solutions={}", i0, result, solutions);
+	    log.info("Result for {} was {}, solutions={}", fnArgs, result, solutions);
         if(CACHE_ENABLED) cache.put(key, result);
         return result;        
 
@@ -158,7 +164,7 @@ public class recMin extends FunctionBase3 {
 	    
 	    try (QueryExecution qe = 
 	            QueryExecutionFactory.sparqlService(service, query, client)
-	            //QueryExecutionFactory.create(query, Dataset.getDefaultModel()) 
+	            //QueryExecutionFactory.create(query) //, Dataset.getDefaultModel()) 
 	      ) {
 	      
             ResultSet rs = qe.execSelect(); // sparql query is actually executed remotely on the endpoint

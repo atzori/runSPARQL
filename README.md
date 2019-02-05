@@ -110,9 +110,6 @@ This is better for testing:
 
 ```
 PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.webofcode.wfn.>
-PREFIX db: <http://dbpedia.org/>
-PREFIX dbo: <http://dbpedia.org/ontology/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?result 
 { 
@@ -133,15 +130,12 @@ This is probably the most elegant solution, based on `OPTIONAL`:
 
 ```
 PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.webofcode.wfn.>
-PREFIX db: <http://dbpedia.org/>
-PREFIX dbo: <http://dbpedia.org/ontology/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?result 
 { 
     # bind variables to parameter values 
     VALUES (?query ?endpoint) { ( 
-        "OPTIONAL { ?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next} BIND( IF(?i0 = <http://dbpedia.org/ontology/PopulatedPlace>, 0 , 1 + wfn:recMin(?query, ?endpoint, ?next)) AS ?result)" 
+        "OPTIONAL { ?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next } BIND( IF(?i0 = <http://dbpedia.org/ontology/PopulatedPlace>, 0 , 1 + wfn:recMin(?query, ?endpoint, ?next)) AS ?result)" 
         "http://127.0.0.1:3030/ds/sparql"
     )}
 
@@ -149,3 +143,100 @@ SELECT ?result
     BIND( wfn:recMin(?query,?endpoint, <http://dbpedia.org/ontology/Village>) AS ?result)
 } 
 ```
+
+
+### recMin-opt (temptative) 
+#### for factorial
+```
+PREFIX wfn: <http://webofcode.org/wfn/>
+
+SELECT ?result 
+{ 
+    # bind variables to parameter values 
+    VALUES (?query ?endpoint) { ( 
+        "OPTIONAL { ?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next } BIND( IF(?i0 = <http://dbpedia.org/ontology/PopulatedPlace>, 0 , wfn:recMin(?query, ?n+1, ?next)) AS ?result)" 
+        "http://127.0.0.1:3030/ds/sparql"
+    )}
+
+    # actual call of the recursive query 
+    BIND( wfn:recMin(?query, 0, <http://dbpedia.org/ontology/Village>) AS ?result)
+} 
+```
+
+#### for graph node
+
+```
+PREFIX wfn: <http://webofcode.org/wfn/>
+
+SELECT ?result 
+{ 
+    # bind variables to parameter values 
+    VALUES (?query ?endpoint) { ( 
+        "BIND ( IF(?i0 <= 0, ?n, ?i0 * wfn:recMin(?query, ?n * ?i0, ?i0-1)) AS ?result)" 
+        "http://127.0.0.1:3030/ds/sparql"
+    )}
+
+    # actual call of the recursive query 
+    BIND( wfn:recMin(?query, 1, 3) AS ?result)
+} 
+```
+
+
+
+### new factorial ###
+```
+PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.webofcode.wfn.>
+
+SELECT ?result 
+{ 
+        # bind variables to parameter values 
+        VALUES (?query) {( 
+                "BIND ( IF(?i0 <= 0, 1, ?i0 * wfn:recMin(?query, ?i0 -1)) AS ?result)" 
+        )}
+  
+   
+        # actual call of the recursive query 
+        BIND( wfn:recMin(?query,3) AS ?result)
+}
+```
+
+
+
+### Links and other references 
+```
+ /*
+ for services:
+ 
+ https://jena.apache.org/documentation/query/app_api.html
+ https://jena.apache.org/documentation/rdfconnection/
+ https://github.com/apache/jena/tree/master/jena-rdfconnection/src/main/java/org/apache/jena/rdfconnection/examples
+ https://jena.apache.org/documentation/fuseki2/fuseki-server-protocol.html#datasets-and-services
+ https://jena.apache.org/documentation/javadoc/arq/org/apache/jena/query/DatasetFactory.html
+ https://jena.apache.org/documentation/javadoc/arq/org/apache/jena/query/QueryExecutionFactory.html
+ 
+ 
+ */
+ 
+
+/*
+import org.apache.jena.atlas.lib.StrUtils;
+import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.fuseki.FusekiLib;
+import org.apache.jena.fuseki.embedded.FusekiServer;
+import org.apache.jena.fuseki.system.FusekiLogging;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.function.FunctionBase1;
+import org.apache.jena.sparql.function.FunctionRegistry;
+
+import org.apache.jena.sparql.engine.http.Service;
+import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
+*/
+```
+
