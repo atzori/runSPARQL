@@ -200,6 +200,21 @@ SELECT ?result
 }
 ```
 
+### new node0 ###
+```
+PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.webofcode.wfn.>
+
+SELECT ?result 
+{ 
+    # bind variables to parameter values 
+    VALUES (?query) { ( 
+        "OPTIONAL { ?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next } BIND( IF(?i0 = <http://dbpedia.org/ontology/PopulatedPlace>, 0 , 1 + wfn:recMin(?query, ?next)) AS ?result)" 
+    )}
+
+    # actual call of the recursive query 
+    BIND( wfn:recMin(?query, <http://dbpedia.org/ontology/Village>) AS ?result)
+} 
+```
 
 
 ### Links and other references 
