@@ -9,13 +9,29 @@ Function is being refactored heavily and renamed `wfn:recMin`
 Introducing Recursion in SPARQL
 -------------------------------
 
-We developed a SPARQL function called `wfn:recMin` that takes a string containing a SPARQL query as input and executes it.
-Such SPARQL query **can refer to itself**, thus enabling recursion and extending the range of computable functions within SPARQL.
-It allows simple recursive computations such as factorial or graph traversal algorithms to be easily implemented within SPARQL on [Fuseki](https://jena.apache.org/documentation/fuseki2/).
+We developed a set of custom SPARQL functions that takes a string containing a SPARQL query fragment as input and executes it.
+Such SPARQL query **can refer to itself**, thus enabling *recursion* and extending the range of computable functions within SPARQL.
+It allows simple recursive computations such as factorial or complex graph traversal algorithms to be easily implemented within SPARQL on [Fuseki](https://jena.apache.org/documentation/fuseki2/).
 
-Our work can be found in: 
+
+Recursive Functions
+-------------------
+We developed the following functions, for which we suggest the use of the `wfn` namespace: `PREFIX wfn: <http://webofcode.org/wfn/>`
+
+  - `wfn:runSPARQL(?query, ?endpoint [, ?i0, ?i1, ...])` this function takes a SPARQL query snippet and an endpoint and executes this 
+
+Function will be called with `wfn:recMin`. Please note that if function is not registered, you must use `PREFIX wfn: <java:org.webofcode.wfn.>` as in the examples section.
+
+
+
+Scientific Papers
+-----------------
+
+Our initial work presenting the `runSPARQL` function can be found in: 
 
  * [Computing Recursive SPARQL Queries](https://doi.org/10.1109/ICSC.2014.54). Maurizio Atzori. _8th IEEE International Conference on Semantic Computing_ (2014)
+
+Some newer work presenting the other functions is under evaluation.
 
 
 Name space
@@ -207,7 +223,7 @@ PREFIX wfn: <http://webofcode.org/wfn/>  # alternatively: PREFIX wfn: <java:org.
 SELECT ?result 
 { 
     # bind variables to parameter values 
-    VALUES (?query) { ( 
+    VALUES (?query) {( 
         "OPTIONAL { ?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next } BIND( IF(?i0 = <http://dbpedia.org/ontology/PopulatedPlace>, 0 , 1 + wfn:recMin(?query, ?next)) AS ?result)" 
     )}
 
