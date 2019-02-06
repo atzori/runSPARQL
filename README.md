@@ -52,35 +52,49 @@ Examples
 --------
 
 ### Computing the Factorial
-The following is an example of recursive SPARQL query that computes the factorial of 3: 
-```
-PREFIX wfn: <http://webofcode.org/wfn/> 
+The following is an example of recursive SPARQL query that computes the factorial of 3, returning `"6"^^xsd:integer`: 
 
-SELECT ?result 
-{ 
-        # bind variables to parameter values 
-        VALUES (?query ?endpoint) { ( 
-                "BIND ( IF(?i0 <= 0, 1, ?i0 * wfn:runSPARQL(?query,?endpoint, ?i0 -1)) AS ?result)" 
-                "http://127.0.0.1:3030/ds/sparql"
+    PREFIX wfn: <http://webofcode.org/wfn/> 
+
+    SELECT ?result { 
+            # bind variables to parameter values 
+            VALUES (?query ?endpoint) { ( 
+                    "BIND ( IF(?i0 <= 0, 1, ?i0 * wfn:runSPARQL(?query,?endpoint, ?i0 -1)) AS ?result)" 
+                    "http://127.0.0.1:3030/ds/sparql"
+            )}
+      
+       
+            # actual call of the recursive query 
+            BIND( wfn:runSPARQL(?query,?endpoint,3) AS ?result)
+    }
+
+
+At the first iteration, runSPARQL will run the following:
+
+    PREFIX wfn: <java:org.webofcode.wfn.>
+    SELECT ?result {
+        # bind variables to parameter values
+        VALUES (?query ?endpoint ?i0) { (
+            "BIND ( IF(?i0 <= 0, 1, ?i0 * wfn:runSPARQL(?query,?endpoint, ?i0 -1)) AS ?result)"
+            "http://127.0.0.1:3030/ds/sparql"
+            3
         )}
-  
-   
-        # actual call of the recursive query 
-        BIND( wfn:runSPARQL(?query,?endpoint,3) AS ?result)
-}
-```
+        
+        # the recursive query
+        BIND ( IF(?i0 <= 0, 1, ?i0 * wfn:runSPARQL(?query,?endpoint, ?i0 -1)) AS ?result)
+        FILTER (!isBlank(?result))
+    } LIMIT 1
+
+In the following iteration `?i0` will be then set to `2`, ..., until `0` is reached and recursion stops as per the base case specified in `?query`.
+
 
 ### Graph search
 An example of recursive SPARQL query that computes the distance between two nodes ([dbo:PopulatedPlace](http://dbpedia.org/ontology/PopulatedPlace) and [dbo:Village](http://dbpedia.org/ontology/Village)) in a hierarchy: 
 
 ```
 PREFIX wfn: <http://webofcode.org/wfn/>
-PREFIX db: <http://dbpedia.org/>
-PREFIX dbo: <http://dbpedia.org/ontology/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT ?result 
-{ 
+SELECT ?result { 
         # bind variables to parameter values 
         VALUES (?query ?endpoint) { ( 
                 "?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next. BIND( IF(?next = <http://dbpedia.org/ontology/PopulatedPlace>, 1 , 1 + wfn:runSPARQL(?query, ?endpoint, ?next)) AS ?result)" 
@@ -92,18 +106,34 @@ SELECT ?result
 } 
 ```
 
-The call of `runSPARQL` will generate another SPARQL query, recursively calling `runSPARQL`, similar to the following one:
-```
-PREFIX wfn: <java:org.webofcode.wfn.>
-PREFIX db: <http://dbpedia.org/>
-PREFIX dbo: <http://dbpedia.org/ontology/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+Note that the default dataset is used (in `config/dataset.ttl`) where [dbr:Village](http://dbpedia.org/resource/Village) and [dbr:PopulatedPlace](http://dbpedia.org/resource/PopulatedPlace) have distance 2 like in DBpedia: 
 
-SELECT ?result 
-{ 
-   <http://dbpedia.org/ontology/Village> <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next. 
-   BIND( IF(?next = <http://dbpedia.org/ontology/Place>, 1 , ?next) AS ?result)
-} LIMIT 1
-```
+    dbr:Village -> dbr:Settlement -> dbr:PopulatedPlace
+
+The call of `runSPARQL` will return `"2"^^xsd:integer`, by generating another SPARQL query, recursively calling `runSPARQL`, that in its first iteration is similar to the following one:
+
+    PREFIX wfn: <java:org.webofcode.wfn.>
+    SELECT ?result {
+        # bind variables to parameter values
+        VALUES (?query ?endpoint ?i0) { (
+            "?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next. BIND( IF(?next = <http://dbpedia.org/ontology/PopulatedPlace>, 1 , 1 + wfn:runSPARQL(?query, ?endpoint, ?next)) AS ?result)"
+            "http://127.0.0.1:3030/ds/sparql"
+            <http://dbpedia.org/ontology/Village>
+         )}
+        
+        # the recursive query
+        ?i0 <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next. 
+        BIND( IF(?next = <http://dbpedia.org/ontology/PopulatedPlace>, 1 , 1 + wfn:runSPARQL(?query, ?endpoint, ?next)) AS ?result)
+        FILTER (!isBlank(?result))
+    } LIMIT 1
+
+
+For reading purposes only, the above can be **loosely** rewritten to the following:
+
+    SELECT ?result 
+    { 
+       <http://dbpedia.org/ontology/Village> <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?next. 
+       BIND( IF(?next = <http://dbpedia.org/ontology/PopulatedPlace>, 1 , ?next) AS ?result)  # otherwise use recursion
+    } LIMIT 1
 
 
