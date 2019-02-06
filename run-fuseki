@@ -4,7 +4,7 @@
 # alternatively, go to the fuseki directory to run directly, e.g.:
 #
 # cd fuseki
-# java -Xmx120M -cp "fuseki-server.jar:../target/classes/" org.apache.jena.fuseki.cmd.FusekiCmd --file ../dataset.rdf /ds
+# java ... (see arguments below)
 
 
 # config.ttl can be copied to "fuseki/run/"
