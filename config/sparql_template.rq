@@ -1,0 +1,9 @@
+PREFIX wfn: <java:org.webofcode.wfn.>
+SELECT ?result {
+    # bind variables to parameter values
+    %bindings%
+    
+    # the recursive query
+    %query_snippet%
+    FILTER (!isBlank(?result))
+} LIMIT 1

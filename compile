@@ -3,5 +3,6 @@
 # NOTE: do not run this script from another directory
 
 mkdir -p target/classes
+rm -rf target/classes/*  # clean from previous build
 javac -classpath "fuseki/fuseki-server.jar:src/main/java/" -d "target/classes/" src/main/java/org/webofcode/wfn/*.java 
 
