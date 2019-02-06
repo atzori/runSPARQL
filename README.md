@@ -42,11 +42,12 @@ The usage is the following:
 where: 
   - `query` is a SPARQL query fragment that will be executed by the `runSPARQL` function
   - `endpoint` is a url pointing to the SPARQL endpoint that must be used to run the SPARQL query
-  - `i0`, `i1`, etc. are optional parameter to be used in the SPARQL query 
+  - `i0`, `i1`, etc are optional parameters to be used in the SPARQL query 
 
 
 When called, the `runSPARQL` custom function will execute `query` (that may contain references to runSPARQL itself) against `endpoint`, where variables `?i0`, `?i1`, etc are binded to the values passed to `runSPARQL`.
 
+Note that the query is expected to produce one result only. If there are more results, only the first one provided by the endpoint is returned (blank node are filtered out).
 
 Examples
 --------
@@ -62,7 +63,6 @@ The following is an example of recursive SPARQL query that computes the factoria
                     "BIND ( IF(?i0 <= 0, 1, ?i0 * wfn:runSPARQL(?query,?endpoint, ?i0 -1)) AS ?result)" 
                     "http://127.0.0.1:3030/ds/sparql"
             )}
-      
        
             # actual call of the recursive query 
             BIND( wfn:runSPARQL(?query,?endpoint,3) AS ?result)
@@ -106,7 +106,7 @@ SELECT ?result {
 } 
 ```
 
-Note that the default dataset is used (in `config/dataset.ttl`) where [dbr:Village](http://dbpedia.org/resource/Village) and [dbr:PopulatedPlace](http://dbpedia.org/resource/PopulatedPlace) have distance 2 like in DBpedia: 
+Note that the default dataset is used (in `config/dataset.ttl`) where [dbo:Village](http://dbpedia.org/ontology/Village) and [dbo:PopulatedPlace](http://dbpedia.org/ontology/PopulatedPlace) have distance 2 like in DBpedia: 
 
     dbr:Village -> dbr:Settlement -> dbr:PopulatedPlace
 
